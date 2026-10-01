@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시공간 도서관의 비밀 열쇠 - 인터랙티브 스토리북</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Orbitron:wght@600;900&family=Noto+Sans+KR:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti for Visual Effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Gowun Batang', serif;
+            background-color: #070913;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            transition: background-color 0.8s ease;
+        }
+
+        .sans-font { font-family: 'Noto Sans KR', sans-serif; }
+        .cyber-font { font-family: 'Orbitron', sans-serif; }
+
+        /* Metallic Gold & Cyber Neon Gradients */
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #ffe599 0%, #c99700 50%, #fff2b2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cyber-red-text {
+            background: linear-gradient(135deg, #ff4b4b 0%, #ff0055 50%, #ff9999 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Glitch Effect */
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        .glitch-effect {
+            animation: glitch 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+            animation-play-state: paused;
+        }
+        .glitch-effect.active {
+            animation-play-state: running;
+        }
+
+        /* Hologram Scanning Line */
+        .holo-scan {
+            position: relative;
+            overflow: hidden;
+        }
+        .holo-scan::after {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(239, 68, 68, 0.2) 50%, transparent 100%);
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: -100%; }
+            100% { top: 100%; }
+        }
+
+        /* Gear Animations */
+        @keyframes gearRotateCW {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes gearRotateCCW {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+
+        .gear-cw { animation: gearRotateCW 25s linear infinite; }
+        .gear-ccw { animation: gearRotateCCW 20s linear infinite; }
+
+        /* Shake animation for wrong answers */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Correct pulse effect */
+        @keyframes correctGlow {
+            0% { box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
+            50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.8); }
+            100% { box-shadow: 0 0 0px rgba(16, 185, 129, 0); }
+        }
+        .animate-correct-glow {
+            animation: correctGlow 1.2s ease-in-out;
+        }
+
+        /* Floating Light Orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 0;
+            transition: all 1s ease;
+        }
+
+        /* Glassmorphism Cards */
+        .glass-panel {
+            background: rgba(15, 18, 35, 0.85);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(212, 175, 55, 0.05);
+            transition: all 0.5s ease;
+        }
+
+        .glass-panel-future {
+            background: rgba(20, 8, 15, 0.9);
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.15), inset 0 0 20px rgba(239, 68, 68, 0.1);
+        }
+
+        /* Buttons */
+        .btn-gold {
+            background: linear-gradient(135deg, #b8860b 0%, #d4af37 50%, #996515 100%);
+            color: #0d1117;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .portal-red {
+            background: radial-gradient(circle, rgba(239,68,68,0.2) 0%, rgba(153,27,27,0.05) 70%);
+            border: 2px solid rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.25);
+        }
+        .portal-red:hover {
+            border-color: rgba(239, 68, 68, 0.9);
+            box-shadow: 0 0 35px rgba(239, 68, 68, 0.5);
+        }
+
+        .portal-blue {
+            background: radial-gradient(circle, rgba(59,130,246,0.2) 0%, rgba(30,58,138,0.05) 70%);
+            border: 2px solid rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.25);
+        }
+        .portal-blue:hover {
+            border-color: rgba(59, 130, 246, 0.9);
+            box-shadow: 0 0 35px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Gate Pass Animation Overlay & Stepper Styles */
+        @keyframes warpPortal {
+            0% { transform: scale(0.8) rotate(0deg); opacity: 0; }
+            50% { transform: scale(1.05) rotate(180deg); opacity: 1; }
+            100% { transform: scale(1) rotate(360deg); opacity: 1; }
+        }
+
+        .warp-animation {
+            animation: warpPortal 0.7s ease-out forwards;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.8); }
+        }
+
+        .active-gate-step {
+            animation: pulseGlow 2s infinite;
+            border-color: #f59e0b !important;
+            background: rgba(245, 158, 11, 0.2) !important;
+            color: #fef08a !important;
+        }
+
+        .cleared-gate-step {
+            border-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.2) !important;
+            color: #a7f3d0 !important;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #070913; }
+        ::-webkit-scrollbar-thumb { background: #2a314d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-amber-500 selection:text-black">
+
+    <!-- Screen Flash Effect Layer -->
+    <div id="screenFlash" class="fixed inset-0 pointer-events-none z-50 transition-opacity duration-500 opacity-0 bg-emerald-500/20"></div>
+
+    <!-- Background Ambient Glows -->
+    <div id="orbLeft" class="orb bg-amber-600 w-96 h-96 -top-20 -left-20"></div>
+    <div id="orbRight" class="orb bg-blue-700 w-96 h-96 bottom-10 -right-20"></div>
+    <div id="orbCenter" class="orb bg-purple-900 w-80 h-80 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+
+    <!-- Background Clockwork Gears -->
+    <div class="fixed inset-0 pointer-events-none opacity-10 overflow-hidden z-0">
+        <i id="bgGear1" class="fa-solid fa-gear gear-cw text-amber-300 text-9xl absolute -top-10 -right-10"></i>
+        <i id="bgGear2" class="fa-solid fa-gear gear-ccw text-amber-200 text-8xl absolute top-1/3 -left-12"></i>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="relative z-10 w-full p-4 md:px-8 flex justify-between items-center border-b border-amber-500/20 bg-slate-950/70 backdrop-blur-md">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-book-bookmark text-amber-400 text-2xl md:text-3xl"></i>
+            <div>
+                <h1 class="font-bold text-lg md:text-xl gold-gradient-text">시공간 도서관의 비밀 열쇠</h1>
+                <p class="text-xs text-amber-200/70 sans-font">바이브코딩 프로젝트 | 팀 바이브</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="soundToggleBtn" onclick="window.toggleAudio()" class="px-3 py-1.5 rounded-full border border-amber-500/30 bg-slate-900/80 hover:bg-slate-800 text-xs text-amber-300 transition flex items-center gap-2">
+                <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+                <span class="hidden sm:inline sans-font" id="soundLabel">사운드 켜짐</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="relative z-10 container mx-auto px-4 py-6 md:py-10 max-w-4xl flex-grow flex items-center justify-center">
+
+        <!-- ================= PAGE 0: COVER / INTRO ================= -->
+        <section id="page-0" class="w-full glass-panel rounded-2xl p-6 md:p-10 text-center relative overflow-hidden">
+            <div class="mb-6 inline-block px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold tracking-wider uppercase sans-font">
+                Interactive Storybook
+            </div>
+
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-4 gold-gradient-text tracking-wide leading-tight">
+                시공간 도서관의<br class="sm:hidden"> 비밀 열쇠
+            </h2>
+
+            <p class="text-sm md:text-base text-slate-300 max-w-2xl mx-auto mb-8 leading-relaxed">
+                밤 12시가 되면 잊혀진 지하 서고의 문이 열린다.<br>
+                멈춰버린 시계 태엽 책 속에서 흘러나오는 시간의 비밀을 풀고,<br>
+                위기에 빠진 도서관과 붕괴하는 시간선을 바로잡아 보세요!
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-8 text-left sans-font">
+                <div class="p-4 rounded-xl bg-slate-900/60 border border-amber-500/20 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-xl flex-shrink-0">
+                        <i class="fa-solid fa-user-ninja"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-amber-400 font-semibold">주인공</div>
+                        <div class="text-sm font-bold text-slate-100">루카 (15세)</div>
+                        <div class="text-xs text-slate-400">호기심 많은 도서관 서기 시습생</div>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-900/60 border border-amber-500/20 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-indigo-300 text-xl flex-shrink-0">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-indigo-400 font-semibold">장르 / 무대</div>
+                        <div class="text-sm font-bold text-slate-100">판타지 & 시간여행</div>
+                        <div class="text-xs text-slate-400">밤 12시 시공간 도서관 지하 서고</div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="window.goToPage(1)" class="btn-gold px-8 py-3.5 rounded-xl text-base md:text-lg flex items-center gap-3 mx-auto group">
+                <span>이야기 시작하기</span>
+                <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </section>
+
+        <!-- ================= PAGE 1: STEP 1 - THE BEGINNING ================= -->
+        <section id="page-1" class="hidden w-full glass-panel rounded-2xl p-6 md:p-10 relative">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-amber-500/20 sans-font text-xs text-amber-400">
+                <span>STEP 1. 이야기의 시작</span>
+                <span>[ 1 / 4 ]</span>
+            </div>
+
+            <div class="space-y-4 mb-8">
+                <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center text-amber-400 text-3xl mb-4 mx-auto md:mx-0">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <h3 class="text-2xl md:text-3xl font-bold text-amber-100">자정 12시, 지하 서고의 이상 현상</h3>
+                <p class="text-base text-slate-300 leading-relaxed">
+                    달빛조차 차단된 자정 12시. 서기 시습생 루카는 먼지 쌓인 지하 서고 정리 중 째깍거리는 놋쇠 시계 책을 발견합니다.
+                </p>
+                <div class="p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 text-amber-200 text-sm leading-relaxed italic">
+                    "째깍... 째깍... 시공간 차원의 문이 열립니다..."
+                </div>
+                <p class="text-base text-slate-300 leading-relaxed">
+                    책을 펼치자 공기가 진동하며 붉은빛의 과거 문과 푸른빛의 미래 문이 눈앞에 일렁이기 시작합니다!
+                </p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-900/80 border border-amber-500/30 mb-6 text-center">
+                <p class="text-sm text-amber-300 font-semibold sans-font">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>독자의 선택: 루카는 어느 시공간 문으로 들어갈까요?
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="window.makeChoice('A')" class="portal-red p-5 rounded-xl text-left transition group relative overflow-hidden flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded bg-red-500/20 text-red-300 border border-red-500/40 sans-font">선택 A</span>
+                        <i class="fa-solid fa-fire text-red-400 text-2xl group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <h4 class="font-bold text-lg text-red-200 mb-2">붉은빛의 과거 문으로 들어간다</h4>
+                    <p class="text-xs text-slate-300 sans-font leading-relaxed">
+                        100년 전 대화재가 일어났던 도서관 설립 당일의 과거로 이동합니다.
+                    </p>
+                </button>
+
+                <button onclick="window.makeChoice('B')" class="portal-blue p-5 rounded-xl text-left transition group relative overflow-hidden flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-bold px-2.5 py-1 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 sans-font">선택 B (추천)</span>
+                        <i class="fa-solid fa-hourglass-half text-blue-400 text-2xl group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <h4 class="font-bold text-lg text-blue-200 mb-2">푸른빛의 미래 문으로 들어간다</h4>
+                    <p class="text-xs text-slate-300 sans-font leading-relaxed">
+                        100년 후 지식이 소멸하고 파멸 직전에 놓인 황폐한 미래 도서관으로 이동합니다.
+                    </p>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: STEP 2 - CHOICE RESULT ================= -->
+        <section id="page-2" class="hidden w-full glass-panel rounded-2xl p-6 md:p-10 relative transition-all duration-700">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-amber-500/20 sans-font text-xs text-amber-400">
+                <span>STEP 2. 시공간의 사건 및 깨달음</span>
+                <span>[ 2 / 4 ]</span>
+            </div>
+
+            <!-- Choice A Narrative Content -->
+            <div id="choice-narrative-A" class="hidden space-y-4 mb-6">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-bold sans-font">
+                    <i class="fa-solid fa-history"></i> 과거의 도서관 (100년 전)
+                </div>
+                <h3 class="text-2xl md:text-3xl font-bold text-red-200">불길 속에 감춰진 힌트</h3>
+                <p class="text-base text-slate-300 leading-relaxed">
+                    매캐한 불길이 뒤덮인 100년 전 설립 당일. 루카는 도서관을 지키던 어린 시절의 할아버지를 만납니다.
+                </p>
+                <div class="p-4 rounded-xl bg-red-950/40 border border-red-500/40 text-slate-200 text-sm leading-relaxed">
+                    "시간의 톱니바퀴가 거꾸로 돌고 있다! 과거의 봉인 암호를 풀어야만 미래의 파멸을 막을 수 있단다!"
+                </div>
+            </div>
+
+            <!-- Choice B Narrative Content (DRAMATIC FUTURE COLLAPSE) -->
+            <div id="choice-narrative-B" class="hidden space-y-6 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs font-bold sans-font animate-pulse">
+                        <i class="fa-solid fa-triangle-exclamation"></i> 경고: 미래 시공간 붕괴 중
+                    </div>
+                    <span class="cyber-font text-xs text-rose-400 tracking-widest">TIMELINE_CRITICAL</span>
+                </div>
+
+                <h3 class="text-2xl md:text-3xl font-extrabold cyber-red-text glitch-effect active" id="futureTitle">
+                    황폐해진 미래와 잔해
+                </h3>
+
+                <p class="text-base text-slate-200 leading-relaxed sans-font">
+                    푸른빛의 문을 넘어선 루카의 눈앞에 펼쳐진 것은 평화로운 미래가 아닌, <strong class="text-rose-400">모든 서적의 지식이 지워지고 시간 시계탑이 산산조각 난 절망적인 황무지</strong>였습니다.
+                </p>
+
+                <!-- AI Holographic Hologram Box with Typewriter Effect -->
+                <div class="holo-scan p-5 rounded-xl bg-rose-950/50 border-2 border-rose-500/60 shadow-2xl space-y-3">
+                    <div class="flex items-center gap-3 border-b border-rose-500/30 pb-2">
+                        <i class="fa-solid fa-robot text-rose-400 text-xl animate-bounce"></i>
+                        <span class="cyber-font text-xs font-bold text-rose-300">SYSTEM.AI_GUARDIAN [LAST RECORD]</span>
+                    </div>
+
+                    <div id="typewriterTarget" class="text-sm md:text-base text-slate-100 font-mono leading-relaxed min-h-[90px] text-left">
+                        <!-- Dynamic typewriter text -->
+                    </div>
+                </div>
+
+                <!-- Dramatic Realization Banner -->
+                <div class="p-4 rounded-xl bg-gradient-to-r from-amber-950/60 to-rose-950/60 border border-amber-500/40 text-amber-200 text-sm leading-relaxed text-left flex items-start gap-3">
+                    <i class="fa-solid fa-lightbulb text-amber-400 text-2xl flex-shrink-0 mt-1"></i>
+                    <div class="sans-font">
+                        <strong class="text-amber-300 block text-base mb-1">루카의 깨달음:</strong>
+                        "미래는 이미 무너졌다! 이 파멸을 막으려면 100년 전 과거부터 이어진 <strong>'시공간 시계탑의 비밀 암호'</strong>를 풀어서 과거와 미래의 시간선을 바로잡아야만 한다!"
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center pt-2">
+                <button onclick="window.goToPage(3)" class="btn-gold px-8 py-3.5 rounded-xl text-base font-bold flex items-center gap-3 mx-auto shadow-lg">
+                    <span>시공간 암호 문제 도전하기</span>
+                    <i class="fa-solid fa-key"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: STEP 3 - SINGLE CLOCKTOWER PUZZLE ================= -->
+        <section id="page-3" class="hidden w-full glass-panel rounded-2xl p-6 md:p-10 relative">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-amber-500/20 sans-font text-xs text-amber-400">
+                <span id="puzzleProgressText">STEP 3. 시공간 관문 통과 시뮬레이션</span>
+                <!-- Lives Display -->
+                <div class="flex items-center gap-2 bg-slate-900/90 px-3 py-1 rounded-full border border-red-500/40">
+                    <span class="text-xs text-slate-300 font-bold mr-1">남은 기회:</span>
+                    <div id="heartsContainer" class="flex items-center gap-1 text-red-500 text-lg">
+                        <i class="fa-solid fa-heart animate-pulse"></i>
+                        <i class="fa-solid fa-heart animate-pulse"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GATE PROGRESS STEPPER -->
+            <div class="mb-8 p-3 rounded-xl bg-slate-950/80 border border-amber-500/30 sans-font">
+                <div class="text-xs text-amber-400 font-bold mb-2 flex items-center justify-between px-1">
+                    <span><i class="fa-solid fa-map-location-dot mr-1.5"></i>차원 관문 돌파 현황</span>
+                    <span id="gateStatusBadge" class="text-amber-300 text-[11px] bg-amber-500/20 px-2 py-0.5 rounded">제 1관문 도전 중</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                    <div id="gateStep1" class="active-gate-step p-2 rounded-lg border border-slate-700 bg-slate-900/60 transition-all flex flex-col items-center justify-center gap-1">
+                        <i class="fa-solid fa-gear text-sm"></i>
+                        <span class="font-bold text-[11px] truncate">1관문: 태엽</span>
+                    </div>
+                    <div id="gateStep2" class="p-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-500 transition-all flex flex-col items-center justify-center gap-1">
+                        <i class="fa-solid fa-gem text-sm"></i>
+                        <span class="font-bold text-[11px] truncate">2관문: 보석</span>
+                    </div>
+                    <div id="gateStep3" class="p-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-500 transition-all flex flex-col items-center justify-center gap-1">
+                        <i class="fa-solid fa-hourglass-start text-sm"></i>
+                        <span class="font-bold text-[11px] truncate">3관문: 모래시계</span>
+                    </div>
+                    <div id="gateStep4" class="p-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-500 transition-all flex flex-col items-center justify-center gap-1">
+                        <i class="fa-solid fa-infinity text-sm"></i>
+                        <span class="font-bold text-[11px] truncate">4관문: 차원핵</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Puzzle Stage 1 -->
+            <div id="puzzleStage1">
+                <div class="text-center mb-6">
+                    <div class="relative inline-block my-2">
+                        <i id="puzzleMainGear" class="fa-solid fa-gear text-6xl md:text-7xl text-amber-400 gear-cw"></i>
+                        <i class="fa-solid fa-lock text-xl text-slate-900 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-amber-200 mt-2">⛩️ 제 1관문: 시계 태엽 수수께끼</h3>
+                </div>
+
+                <div class="p-5 md:p-6 rounded-xl bg-slate-950/80 border border-amber-500/40 mb-6 shadow-inner text-left">
+                    <div class="inline-block px-3 py-1 rounded bg-amber-500/20 text-amber-300 text-xs font-semibold mb-3 sans-font">
+                        <i class="fa-solid fa-door-closed mr-1"></i> 관문 봉인 수수께끼
+                    </div>
+                    <p class="text-sm md:text-base text-amber-100 leading-relaxed font-serif">
+                        "하루는 24시간입니다. 정오(낮 12시)부터 자정(밤 12시)까지 흐르는 시간은 총 몇 시간일까요?"
+                    </p>
+                    <div id="hint1" class="hidden mt-3 p-3 bg-amber-950/40 rounded-lg border border-amber-500/20 text-xs text-amber-200/90 sans-font">
+                        💡 <strong>신비로운 힌트:</strong> 하루 24시간의 딱 절반에 해당하는 시간입니다.
+                    </div>
+                </div>
+
+                <form id="puzzleForm1" onsubmit="window.handlePuzzle1Submit(event)" class="max-w-md mx-auto space-y-4">
+                    <input type="number" id="puzzleInput1" placeholder="숫자를 입력하세요" required
+                           class="w-full px-5 py-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl text-center text-xl font-bold text-amber-200 placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 transition sans-font">
+
+                    <div id="feedbackBox1" class="hidden p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300"></div>
+
+                    <button type="submit" class="btn-gold w-full py-3.5 rounded-xl text-base font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-key"></i>
+                        <span>제 1관문 암호 제출 및 통과</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Puzzle Stage 2 -->
+            <div id="puzzleStage2" class="hidden">
+                <div class="text-center mb-6">
+                    <div class="relative inline-block my-2">
+                        <i class="fa-solid fa-gem text-6xl md:text-7xl text-cyan-400 animate-pulse"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-cyan-200 mt-2">⛩️ 제 2관문: 시공간 보석 방 결합 암호</h3>
+                </div>
+
+                <div class="p-5 md:p-6 rounded-xl bg-slate-950/80 border border-cyan-500/40 mb-6 shadow-inner text-left">
+                    <div class="inline-block px-3 py-1 rounded bg-cyan-500/20 text-cyan-300 text-xs font-semibold mb-3 sans-font">
+                        <i class="fa-solid fa-door-closed mr-1"></i> 관문 봉인 수수께끼
+                    </div>
+                    <p class="text-sm md:text-base text-cyan-100 leading-relaxed font-serif">
+                        "과거, 현재, 미래를 뜻하는 3개의 시공간 문에는 각각 7개씩 빛나는 보석이 박혀 있습니다. 3개 문에 있는 보석의 총개수는 몇 개일까요?"
+                    </p>
+                    <div id="hint2" class="hidden mt-3 p-3 bg-cyan-950/40 rounded-lg border border-cyan-500/20 text-xs text-cyan-200/90 sans-font">
+                        💡 <strong>신비로운 힌트:</strong> 3개의 문 × 문마다 7개의 보석 (3 × 7)
+                    </div>
+                </div>
+
+                <form id="puzzleForm2" onsubmit="window.handlePuzzle2Submit(event)" class="max-w-md mx-auto space-y-4">
+                    <input type="number" id="puzzleInput2" placeholder="숫자를 입력하세요" required
+                           class="w-full px-5 py-3 bg-slate-900 border-2 border-cyan-500/40 rounded-xl text-center text-xl font-bold text-cyan-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 transition sans-font">
+
+                    <div id="feedbackBox2" class="hidden p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300"></div>
+
+                    <button type="submit" class="btn-gold w-full py-3.5 rounded-xl text-base font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-key"></i>
+                        <span>제 2관문 암호 제출 및 통과</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Puzzle Stage 3 -->
+            <div id="puzzleStage3" class="hidden">
+                <div class="text-center mb-6">
+                    <div class="relative inline-block my-2">
+                        <i class="fa-solid fa-hourglass-start text-6xl md:text-7xl text-purple-400 animate-spin" style="animation-duration: 8s;"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-purple-200 mt-2">⛩️ 제 3관문: 시간 탐험 변환 암호</h3>
+                </div>
+
+                <div class="p-5 md:p-6 rounded-xl bg-slate-950/80 border border-purple-500/40 mb-6 shadow-inner text-left">
+                    <div class="inline-block px-3 py-1 rounded bg-purple-500/20 text-purple-300 text-xs font-semibold mb-3 sans-font">
+                        <i class="fa-solid fa-door-closed mr-1"></i> 관문 봉인 수수께끼
+                    </div>
+                    <p class="text-sm md:text-base text-purple-100 leading-relaxed font-serif">
+                        "시간선 복구를 위해 루카는 180분 동안 과거를 탐험했습니다. 1시간은 60분입니다. 루카가 탐험한 시간은 총 몇 시간일까요?"
+                    </p>
+                    <div id="hint3" class="hidden mt-3 p-3 bg-purple-950/40 rounded-lg border border-purple-500/20 text-xs text-purple-200/90 sans-font">
+                        💡 <strong>신비로운 힌트:</strong> 180을 60으로 나누어 보세요. (60 + 60 + 60 = 180)
+                    </div>
+                </div>
+
+                <form id="puzzleForm3" onsubmit="window.handlePuzzle3Submit(event)" class="max-w-md mx-auto space-y-4">
+                    <input type="number" id="puzzleInput3" placeholder="숫자를 입력하세요" required
+                           class="w-full px-5 py-3 bg-slate-900 border-2 border-purple-500/40 rounded-xl text-center text-xl font-bold text-purple-200 placeholder-slate-500 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/30 transition sans-font">
+
+                    <div id="feedbackBox3" class="hidden p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300"></div>
+
+                    <button type="submit" class="btn-gold w-full py-3.5 rounded-xl text-base font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-key"></i>
+                        <span>제 3관문 암호 제출 및 통과</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Puzzle Stage 4 -->
+            <div id="puzzleStage4" class="hidden">
+                <div class="text-center mb-6">
+                    <div class="relative inline-block my-2">
+                        <i class="fa-solid fa-infinity text-6xl md:text-7xl font-bold text-emerald-400 animate-pulse"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-emerald-200 mt-2">⛩️ 제 4관문 (최종): 시공간 차원핵 수열</h3>
+                </div>
+
+                <div class="p-5 md:p-6 rounded-xl bg-slate-950/80 border border-emerald-500/40 mb-6 shadow-inner text-left">
+                    <div class="inline-block px-3 py-1 rounded bg-emerald-500/20 text-emerald-300 text-xs font-semibold mb-3 sans-font">
+                        <i class="fa-solid fa-door-closed mr-1"></i> 관문 봉인 수수께끼
+                    </div>
+                    <p class="text-sm md:text-base text-emerald-100 leading-relaxed font-serif">
+                        "시계탑의 고대 회로에 각인된 차원 수열입니다: <strong class="text-emerald-300">[ 2, 6, 12, 20, 30, ? ]</strong><br>숫자 사이의 숨겨진 규칙을 발견하여 빈칸에 들어갈 최종 암호를 맞추세요!"
+                    </p>
+                    <div id="hint4" class="hidden mt-3 p-3 bg-emerald-950/40 rounded-lg border border-emerald-500/20 text-xs text-emerald-200/90 sans-font">
+                        💡 <strong>신비로운 힌트:</strong> 각 숫자들의 차이를 구해보세요. (+4, +6, +8, +10...). 30 다음에는 몇을 더해야 할까요?
+                    </div>
+                </div>
+
+                <form id="puzzleForm4" onsubmit="window.handlePuzzle4Submit(event)" class="max-w-md mx-auto space-y-4">
+                    <input type="number" id="puzzleInput4" placeholder="숫자를 입력하세요" required
+                           class="w-full px-5 py-3 bg-slate-900 border-2 border-emerald-500/40 rounded-xl text-center text-xl font-bold text-emerald-200 placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 transition sans-font">
+
+                    <div id="feedbackBox4" class="hidden p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300"></div>
+
+                    <button type="submit" class="btn-gold w-full py-3.5 rounded-xl text-base font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-key"></i>
+                        <span>최종 관문 돌파 & 황금열쇠 완성</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- GATE CLEARED TRANSITION MODAL -->
+        <div id="gatePassModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-lg">
+            <div class="glass-panel max-w-lg w-full rounded-2xl p-6 md:p-8 text-center warp-animation border-2 border-amber-400/80 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-amber-500/20 rounded-full blur-2xl"></div>
+                <div class="absolute -left-10 -top-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-2xl"></div>
+
+                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-tr from-amber-500 to-emerald-400 flex items-center justify-center text-slate-950 text-4xl shadow-lg border-2 border-amber-200 animate-bounce">
+                    <i class="fa-solid fa-door-open" id="gatePassIcon"></i>
+                </div>
+
+                <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/40 mb-2 sans-font" id="gatePassBadge">
+                    GATE SEAL BROKEN
+                </span>
+
+                <h3 class="text-2xl md:text-3xl font-extrabold gold-gradient-text mb-2" id="gatePassTitle">
+                    제 1관문 봉인 해제!
+                </h3>
+
+                <p class="text-sm md:text-base text-slate-200 sans-font mb-6 leading-relaxed" id="gatePassDesc">
+                    태엽 장치가 작동하며 고대의 강철 문이 열립니다. 다음 관문인 [보석의 방]으로 진입합니다!
+                </p>
+
+                <div class="p-3 bg-slate-900/80 rounded-xl border border-amber-500/30 text-xs text-amber-200/90 italic sans-font mb-6 flex items-center gap-2 justify-center">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                    <span id="gatePassQuote">"차원의 시계바늘이 정상 회전하기 시작합니다..."</span>
+                </div>
+
+                <button onclick="window.closeGateModal()" class="btn-gold px-8 py-3 rounded-xl text-base font-bold w-full flex items-center justify-center gap-2 shadow-lg">
+                    <span>다음 관문 진입하기</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= PAGE FAILURE: GAME OVER ================= -->
+        <section id="page-failure" class="hidden w-full glass-panel glass-panel-future rounded-2xl p-6 md:p-10 text-center relative overflow-hidden">
+            <div class="w-20 h-20 rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center text-rose-400 text-4xl mx-auto mb-6 shadow-2xl animate-bounce">
+                <i class="fa-solid fa-heart-crack"></i>
+            </div>
+
+            <div class="inline-block px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs font-bold mb-3 sans-font">
+                TIMELINE COLLAPSED
+            </div>
+
+            <h3 class="text-3xl md:text-4xl font-extrabold text-rose-200 mb-4 glitch-effect active">
+                시공간 복구 실패!
+            </h3>
+
+            <div class="space-y-4 text-slate-300 leading-relaxed max-w-2xl mx-auto mb-8 text-sm md:text-base sans-font">
+                <p>
+                    기회를 모두 상실하여 시공간 도서관의 차원이 완전히 붕괴되었습니다.<br>
+                    시간의 톱니바퀴가 정지하고 도서관이 시공간의 틈새 속으로 사라집니다...
+                </p>
+                <div class="p-4 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-200 text-sm italic">
+                    "포기하지 마세요! 다시 도전하면 시공간을 바로잡을 수 있습니다."
+                </div>
+            </div>
+
+            <div class="flex justify-center sans-font">
+                <button onclick="window.retryPuzzles()" class="btn-gold px-8 py-3.5 rounded-xl text-base font-bold flex items-center justify-center gap-2 shadow-lg">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>시공간 관문 재도전하기 (하트 충전)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 4: STEP 4 - ENDING ================= -->
+        <section id="page-4" class="hidden w-full glass-panel rounded-2xl p-6 md:p-10 text-center relative overflow-hidden">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-amber-500/20 sans-font text-xs text-amber-400">
+                <span>STEP 4. 이야기의 결말</span>
+                <span>[ 4 / 4 ]</span>
+            </div>
+
+            <!-- Glowing Key Animation -->
+            <div class="relative w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                <div class="absolute inset-0 bg-amber-400/20 rounded-full blur-xl animate-pulse"></div>
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-amber-300 to-amber-600 flex items-center justify-center text-slate-950 text-4xl shadow-lg border-2 border-yellow-200">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+            </div>
+
+            <div class="inline-block px-4 py-1.5 rounded-full bg-amber-400/20 border border-amber-400/50 text-amber-300 text-xs font-bold mb-3 sans-font">
+                HAPPY ENDING
+            </div>
+
+            <h3 class="text-3xl md:text-4xl font-extrabold text-amber-100 mb-4 gold-gradient-text">
+                시간선을 복구한 수호자 루카
+            </h3>
+
+            <div class="space-y-4 text-slate-300 leading-relaxed max-w-2xl mx-auto mb-8 text-sm md:text-base">
+                <p>
+                    암호를 맞추고 얻어낸 황금빛 열쇠가 시계탑 중앙 홀에 들어맞는 순간,<br>
+                    파멸해가던 미래의 시간선과 과거의 역사가 순식간에 회복됩니다!
+                </p>
+                <div class="p-4 rounded-xl bg-slate-900/80 border border-amber-500/30 text-amber-200 text-left sans-font">
+                    <i class="fa-solid fa-quote-left text-amber-400 mr-2"></i>
+                    "과거와 미래의 비밀을 풀어 도서관을 구한 루카, 너를 시공간 도서관의 영원한 수호자로 명하노라."<br>
+                    사라졌던 지식이 지혜의 오로라가 되어 온 도서관을 가득 채웠습니다.
+                </div>
+            </div>
+
+            <div class="flex justify-center sans-font">
+                <button onclick="window.restartStory()" class="btn-gold px-8 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>처음부터 다시 읽기</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 w-full py-4 text-center text-xs text-slate-500 border-t border-amber-500/10 bg-slate-950/80 sans-font">
+        <p>© 2026 Interactive Storybook - Vibe Coding Project. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let currentPage = 0;
+        let chosenPath = '';
+        let audioEnabled = true; // Enabled by default
+        let audioCtx = null;
+        let typewriterInterval = null;
+        let lives = 2; // Maximum lives
+        let nextGateCallback = null;
+
+        // Initialize Web Audio Context
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Auto-unlock audio context on user interaction
+        window.addEventListener('click', () => {
+            initAudio();
+        }, { once: false });
+
+        // Synthesize Rich Audio Effects via Web Audio API
+        function playSound(type) {
+            if (!audioEnabled) return;
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(450, now);
+                    osc.frequency.exponentialRampToValueAtTime(850, now + 0.08);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+
+                } else if (type === 'correct') {
+                    // Sparkling Upward Major Chime (Celebratory Chords)
+                    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+                    notes.forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        
+                        gain.gain.setValueAtTime(0.01, now + idx * 0.08);
+                        gain.gain.linearRampToValueAtTime(0.22, now + idx * 0.08 + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.5);
+                        
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.5);
+                    });
+
+                } else if (type === 'gateClear') {
+                    // Triumphant Royal Brass Fanfare
+                    const fanfare = [
+                        { f: 523.25, t: 0 },
+                        { f: 659.25, t: 0.1 },
+                        { f: 783.99, t: 0.2 },
+                        { f: 1046.50, t: 0.35 },
+                        { f: 1318.51, t: 0.55 }
+                    ];
+                    fanfare.forEach(note => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(note.f, now + note.t);
+                        
+                        gain.gain.setValueAtTime(0.25, now + note.t);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + note.t + 0.6);
+                        
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + note.t);
+                        osc.stop(now + note.t + 0.6);
+                    });
+
+                } else if (type === 'glitch') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.linearRampToValueAtTime(120, now + 0.25);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+
+                } else if (type === 'wrong') {
+                    // Dissonant Low Error Buzz
+                    const freqs = [180, 170];
+                    freqs.forEach(freq => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, now);
+                        osc.frequency.linearRampToValueAtTime(80, now + 0.35);
+                        gain.gain.setValueAtTime(0.25, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.35);
+                    });
+                }
+            } catch (e) {
+                console.log('Audio playback error:', e);
+            }
+        }
+
+        // Trigger Visual Effects (Confetti Particles & Screen Glow)
+        function triggerSuccessVisualFX(colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899']) {
+            // Flash screen green
+            const flash = document.getElementById('screenFlash');
+            if (flash) {
+                flash.classList.remove('opacity-0');
+                flash.classList.add('opacity-100');
+                setTimeout(() => {
+                    flash.classList.remove('opacity-100');
+                    flash.classList.add('opacity-0');
+                }, 400);
+            }
+
+            // Confetti Cannon Explosion Effect
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 70,
+                    spread: 70,
+                    origin: { y: 0.65 },
+                    colors: colors
+                });
+            }
+        }
+
+        function triggerGrandVictoryFX() {
+            if (typeof confetti === 'function') {
+                const duration = 3 * 1000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 5,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: ['#ffe599', '#c99700', '#10b981']
+                    });
+                    confetti({
+                        particleCount: 5,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: ['#ffe599', '#c99700', '#3b82f6']
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                })();
+            }
+        }
+
+        function triggerShakeFX(formElement) {
+            if (!formElement) return;
+            formElement.classList.add('animate-shake');
+            setTimeout(() => {
+                formElement.classList.remove('animate-shake');
+            }, 500);
+        }
+
+        function updateGateTrackerUI(activeStage) {
+            const badge = document.getElementById('gateStatusBadge');
+            if (badge) badge.innerText = `제 ${activeStage}관문 도전 중`;
+
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`gateStep${i}`);
+                if (!el) continue;
+                if (i < activeStage) {
+                    el.className = "cleared-gate-step p-2 rounded-lg border bg-slate-900/60 transition-all flex flex-col items-center justify-center gap-1";
+                    el.querySelector('i').className = "fa-solid fa-circle-check text-sm text-emerald-400";
+                } else if (i === activeStage) {
+                    el.className = "active-gate-step p-2 rounded-lg border bg-slate-900/60 transition-all flex flex-col items-center justify-center gap-1";
+                    el.querySelector('i').className = "fa-solid fa-key text-sm text-amber-300 animate-bounce";
+                } else {
+                    el.className = "p-2 rounded-lg border border-slate-700 bg-slate-900/60 text-slate-500 transition-all flex flex-col items-center justify-center gap-1";
+                    el.querySelector('i').className = "fa-solid fa-lock text-sm text-slate-600";
+                }
+            }
+        }
+
+        function triggerGatePassModal(clearedStage, title, desc, quote, onProceed) {
+            playSound('gateClear');
+            triggerSuccessVisualFX();
+            nextGateCallback = onProceed;
+
+            document.getElementById('gatePassTitle').innerText = title;
+            document.getElementById('gatePassDesc').innerText = desc;
+            document.getElementById('gatePassQuote').innerText = quote;
+            document.getElementById('gatePassModal').classList.remove('hidden');
+        }
+
+        function closeGateModal() {
+            playSound('click');
+            document.getElementById('gatePassModal').classList.add('hidden');
+            if (nextGateCallback) {
+                nextGateCallback();
+                nextGateCallback = null;
+            }
+        }
+
+        function updateHeartsUI() {
+            const container = document.getElementById('heartsContainer');
+            if (!container) return;
+            let html = '';
+            for (let i = 0; i < 2; i++) {
+                if (i < lives) {
+                    html += `<i class="fa-solid fa-heart animate-pulse"></i>`;
+                } else {
+                    html += `<i class="fa-solid fa-heart-crack text-slate-600"></i>`;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function loseHeart() {
+            lives--;
+            updateHeartsUI();
+            if (lives <= 0) {
+                setTimeout(() => {
+                    showFailurePage();
+                }, 1000);
+            }
+        }
+
+        function showFailurePage() {
+            playSound('wrong');
+            for (let i = 0; i <= 4; i++) {
+                const p = document.getElementById(`page-${i}`);
+                if (p) p.classList.add('hidden');
+            }
+            const failPage = document.getElementById('page-failure');
+            if (failPage) failPage.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function retryPuzzles() {
+            playSound('click');
+            lives = 2;
+            updateHeartsUI();
+
+            for (let i = 1; i <= 4; i++) {
+                const input = document.getElementById(`puzzleInput${i}`);
+                if (input) input.value = '';
+                const feedback = document.getElementById(`feedbackBox${i}`);
+                if (feedback) feedback.classList.add('hidden');
+                const hint = document.getElementById(`hint${i}`);
+                if (hint) hint.classList.add('hidden');
+                const stage = document.getElementById(`puzzleStage${i}`);
+                if (stage) stage.classList.add('hidden');
+            }
+
+            updateGateTrackerUI(1);
+            document.getElementById('puzzleStage1').classList.remove('hidden');
+            document.getElementById('page-failure').classList.add('hidden');
+            goToPage(3);
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const soundIcon = document.getElementById('soundIcon');
+            const soundLabel = document.getElementById('soundLabel');
+            if (audioEnabled) {
+                initAudio();
+                soundIcon.className = "fa-solid fa-volume-high";
+                soundLabel.innerText = "사운드 켜짐";
+                playSound('click');
+            } else {
+                soundIcon.className = "fa-solid fa-volume-xmark";
+                soundLabel.innerText = "사운드 켜기";
+            }
+        }
+
+        function goToPage(pageNumber) {
+            playSound('click');
+            for (let i = 0; i <= 4; i++) {
+                const p = document.getElementById(`page-${i}`);
+                if (p) p.classList.add('hidden');
+            }
+            const failPage = document.getElementById('page-failure');
+            if (failPage) failPage.classList.add('hidden');
+
+            const target = document.getElementById(`page-${pageNumber}`);
+            if (target) {
+                target.classList.remove('hidden');
+                currentPage = pageNumber;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            if (pageNumber === 4) {
+                triggerGrandVictoryFX();
+            }
+        }
+
+        function makeChoice(choice) {
+            chosenPath = choice;
+            const narrativeA = document.getElementById('choice-narrative-A');
+            const narrativeB = document.getElementById('choice-narrative-B');
+            const page2 = document.getElementById('page-2');
+
+            if (choice === 'A') {
+                playSound('click');
+                narrativeA.classList.remove('hidden');
+                narrativeB.classList.add('hidden');
+                page2.className = "w-full glass-panel rounded-2xl p-6 md:p-10 relative";
+            } else {
+                playSound('glitch');
+                narrativeB.classList.remove('hidden');
+                narrativeA.classList.add('hidden');
+                page2.className = "w-full glass-panel glass-panel-future rounded-2xl p-6 md:p-10 relative";
+                
+                document.getElementById('orbLeft').className = "orb bg-rose-700 w-96 h-96 -top-20 -left-20";
+                document.getElementById('orbRight').className = "orb bg-red-900 w-96 h-96 bottom-10 -right-20";
+
+                startTypewriter("경고... 미래 지식 서버 99.8% 소멸됨. 이 파멸은 100년 전 시간선이 비틀어지며 시작되었다. 무너진 미래를 바꿀 열쇠는 과거의 봉인 암호에 있다...!");
+            }
+
+            goToPage(2);
+        }
+
+        function startTypewriter(text) {
+            const target = document.getElementById('typewriterTarget');
+            if (!target) return;
+            target.innerHTML = '';
+            if (typewriterInterval) clearInterval(typewriterInterval);
+
+            let index = 0;
+            typewriterInterval = setInterval(() => {
+                if (index < text.length) {
+                    target.innerHTML += text.charAt(index);
+                    index++;
+                    if (index % 3 === 0) playSound('click');
+                } else {
+                    clearInterval(typewriterInterval);
+                }
+            }, 35);
+        }
+
+        function handlePuzzle1Submit(event) {
+            event.preventDefault();
+            const form = document.getElementById('puzzleForm1');
+            const inputVal = document.getElementById('puzzleInput1').value.trim();
+            const feedbackBox = document.getElementById('feedbackBox1');
+
+            if (inputVal === '12') {
+                playSound('correct');
+                triggerSuccessVisualFX(['#f59e0b', '#fbbf24', '#ffffff']);
+                feedbackBox.className = "p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300 bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 animate-correct-glow";
+                feedbackBox.innerHTML = "<i class='fa-solid fa-circle-check text-emerald-400 mr-2'></i><strong>제 1관문 봉인 해제 성공! (12시간)</strong><br>태엽 결합 축이 맞춰졌습니다. 다음 관문으로 통과합니다!";
+                feedbackBox.classList.remove('hidden');
+
+                setTimeout(() => {
+                    triggerGatePassModal(
+                        1,
+                        "제 1관문 봉인 해제!",
+                        "째깍 거리는 거대 태엽 문이 열리며 푸른빛의 [시공간 보석의 방] 입구가 드러났습니다!",
+                        "\"과거와 현재의 시간선 축이 맞춰지기 시작합니다...\"",
+                        () => {
+                            document.getElementById('puzzleStage1').classList.add('hidden');
+                            document.getElementById('puzzleStage2').classList.remove('hidden');
+                            updateGateTrackerUI(2);
+                        }
+                    );
+                }, 800);
+            } else {
+                playSound('wrong');
+                triggerShakeFX(form);
+                loseHeart();
+                document.getElementById('hint1').classList.remove('hidden');
+                feedbackBox.className = "p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300 bg-rose-950/80 border border-rose-500/50 text-rose-200";
+                feedbackBox.innerHTML = `<i class='fa-solid fa-triangle-exclamation text-rose-400 mr-2'></i><strong>1관문 암호 오답! (하트 1개 차감)</strong><br>아래 힌트를 확인하세요. (남은 하트: ${lives}개)`;
+                feedbackBox.classList.remove('hidden');
+            }
+        }
+
+        function handlePuzzle2Submit(event) {
+            event.preventDefault();
+            const form = document.getElementById('puzzleForm2');
+            const inputVal = document.getElementById('puzzleInput2').value.trim();
+            const feedbackBox = document.getElementById('feedbackBox2');
+
+            if (inputVal === '21') {
+                playSound('correct');
+                triggerSuccessVisualFX(['#06b6d4', '#22d3ee', '#ffffff']);
+                feedbackBox.className = "p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300 bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 animate-correct-glow";
+                feedbackBox.innerHTML = "<i class='fa-solid fa-circle-check text-emerald-400 mr-2'></i><strong>제 2관문 봉인 해제 성공! (21개)</strong><br>21개 보석의 빛이 모여 제 3관문의 모래시계를 작동시킵니다!";
+                feedbackBox.classList.remove('hidden');
+
+                setTimeout(() => {
+                    triggerGatePassModal(
+                        2,
+                        "제 2관문 돌파 완료!",
+                        "보석들이 화려한 오로라를 내뿜으며 깊은 지하 서고의 [모래시계 성소] 문이 열렸습니다!",
+                        "\"차원의 에너지 파동이 정상 궤도로 진입하고 있습니다!\"",
+                        () => {
+                            document.getElementById('puzzleStage2').classList.add('hidden');
+                            document.getElementById('puzzleStage3').classList.remove('hidden');
+                            updateGateTrackerUI(3);
+                        }
+                    );
+                }, 800);
+            } else {
+                playSound('wrong');
+                triggerShakeFX(form);
+                loseHeart();
+                document.getElementById('hint2').classList.remove('hidden');
+                feedbackBox.className = "p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300 bg-rose-950/80 border border-rose-500/50 text-rose-200";
+                feedbackBox.innerHTML = `<i class='fa-solid fa-triangle-exclamation text-rose-400 mr-2'></i><strong>2관문 암호 오답! (하트 1개 차감)</strong><br>아래 힌트를 확인하세요. (남은 하트: ${lives}개)`;
+                feedbackBox.classList.remove('hidden');
+            }
+        }
+
+        function handlePuzzle3Submit(event) {
+            event.preventDefault();
+            const form = document.getElementById('puzzleForm3');
+            const inputVal = document.getElementById('puzzleInput3').value.trim();
+            const feedbackBox = document.getElementById('feedbackBox3');
+
+            if (inputVal === '3') {
+                playSound('correct');
+                triggerSuccessVisualFX(['#a855f7', '#c084fc', '#ffffff']);
+                feedbackBox.className = "p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300 bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 animate-correct-glow";
+                feedbackBox.innerHTML = "<i class='fa-solid fa-circle-check text-emerald-400 mr-2'></i><strong>제 3관문 봉인 해제 성공! (3시간)</strong><br>멈춰있던 시간이 다시 흐르기 시작합니다! 최종 관문으로 이동합니다!";
+                feedbackBox.classList.remove('hidden');
+
+                setTimeout(() => {
+                    triggerGatePassModal(
+                        3,
+                        "제 3관문 돌파 완료!",
+                        "3시간의 시공간 탐험 결속이 풀리며 도서관의 중심부 [시공간 차원핵] 관문이 거대하게 모습을 드러냅니다!",
+                        "\"드디어 최종 봉인을 풀고 시공간을 수호할 때가 도래했습니다!\"",
+                        () => {
+                            document.getElementById('puzzleStage3').classList.add('hidden');
+                            document.getElementById('puzzleStage4').classList.remove('hidden');
+                            updateGateTrackerUI(4);
+                        }
+                    );
+                }, 800);
+            } else {
+                playSound('wrong');
+                triggerShakeFX(form);
+                loseHeart();
+                document.getElementById('hint3').classList.remove('hidden');
+                feedbackBox.className = "p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300 bg-rose-950/80 border border-rose-500/50 text-rose-200";
+                feedbackBox.innerHTML = `<i class='fa-solid fa-triangle-exclamation text-rose-400 mr-2'></i><strong>3관문 암호 오답! (하트 1개 차감)</strong><br>아래 힌트를 확인하세요. (남은 하트: ${lives}개)`;
+                feedbackBox.classList.remove('hidden');
+            }
+        }
+
+        function handlePuzzle4Submit(event) {
+            event.preventDefault();
+            const form = document.getElementById('puzzleForm4');
+            const inputVal = document.getElementById('puzzleInput4').value.trim();
+            const feedbackBox = document.getElementById('feedbackBox4');
+
+            if (inputVal === '42') {
+                playSound('correct');
+                triggerSuccessVisualFX(['#10b981', '#ffe599', '#3b82f6', '#ec4899']);
+                feedbackBox.className = "p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300 bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 animate-correct-glow";
+                feedbackBox.innerHTML = "<i class='fa-solid fa-circle-check text-emerald-400 mr-2'></i><strong>최종 4관문 완전 해제! (42)</strong><br>모든 관문의 봉인이 풀리며 전설의 황금빛 비밀 열쇠가 완성되었습니다!";
+                feedbackBox.classList.remove('hidden');
+
+                setTimeout(() => {
+                    triggerGatePassModal(
+                        4,
+                        "🎉 모든 시공간 관문 완전 돌파!",
+                        "4개의 모든 관문을 무사히 통과하여 도서관 전체의 시간선이 완전히 복원되었습니다!",
+                        "\"과거와 미래를 연결한 시공간의 수호자 루카만세!\"",
+                        () => {
+                            goToPage(4);
+                        }
+                    );
+                }, 800);
+            } else {
+                playSound('wrong');
+                triggerShakeFX(form);
+                loseHeart();
+                document.getElementById('hint4').classList.remove('hidden');
+                feedbackBox.className = "p-4 rounded-xl text-sm leading-relaxed text-center sans-font transition-all duration-300 bg-rose-950/80 border border-rose-500/50 text-rose-200";
+                feedbackBox.innerHTML = `<i class='fa-solid fa-triangle-exclamation text-rose-400 mr-2'></i><strong>최종 관문 암호 오답! (하트 1개 차감)</strong><br>아래 힌트를 확인하세요. (남은 하트: ${lives}개)`;
+                feedbackBox.classList.remove('hidden');
+            }
+        }
+
+        function restartStory() {
+            playSound('click');
+            chosenPath = '';
+            lives = 2;
+            updateHeartsUI();
+            
+            for (let i = 1; i <= 4; i++) {
+                const pInput = document.getElementById(`puzzleInput${i}`);
+                if (pInput) pInput.value = '';
+                const fBox = document.getElementById(`feedbackBox${i}`);
+                if (fBox) fBox.classList.add('hidden');
+                const hint = document.getElementById(`hint${i}`);
+                if (hint) hint.classList.add('hidden');
+                const stage = document.getElementById(`puzzleStage${i}`);
+                if (stage) stage.classList.add('hidden');
+            }
+
+            updateGateTrackerUI(1);
+            document.getElementById('puzzleStage1').classList.remove('hidden');
+
+            document.getElementById('orbLeft').className = "orb bg-amber-600 w-96 h-96 -top-20 -left-20";
+            document.getElementById('orbRight').className = "orb bg-blue-700 w-96 h-96 bottom-10 -right-20";
+
+            goToPage(0);
+        }
+
+        window.toggleAudio = toggleAudio;
+        window.goToPage = goToPage;
+        window.makeChoice = makeChoice;
+        window.handlePuzzle1Submit = handlePuzzle1Submit;
+        window.handlePuzzle2Submit = handlePuzzle2Submit;
+        window.handlePuzzle3Submit = handlePuzzle3Submit;
+        window.handlePuzzle4Submit = handlePuzzle4Submit;
+        window.retryPuzzles = retryPuzzles;
+        window.restartStory = restartStory;
+        window.closeGateModal = closeGateModal;
+    </script>
+</body>
+</html>
